@@ -1,0 +1,3 @@
+export const domain = 'https://ekyc2.id.th'
+export const token = ''
+export const cookie = 'laravel_session=eyJpdiI6InBpQXNXSWdxdk9pV29KVTVKUWZlRWc9PSIsInZhbHVlIjoiZXBYaSs3R0M0ZVRmRlN1a1hvcUR5dlRWc0owTHVcLzRScDNcL0FiM1o0QXZZTUY1TzI4alZlc3YzVUZFVDMzWW8xIiwibWFjIjoiM2RkZTkxNjQ0MTk1YzZiYWM1ZTRiMzY3Y2IwZjM2OWI5M2RjOGY1YThjNGQzZmYxMGI1Y2ViNmU1NjhiZWUxMCJ9'

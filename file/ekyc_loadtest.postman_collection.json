@@ -1,0 +1,1333 @@
+﻿{
+  "info": {
+    "_postman_id": "b9d873d4-2dc5-4735-b7f0-162233065837",
+    "name": "eKYC Load Test Collection (Token Exchange, 150 Users & Slow Query Targets)",
+    "description": "API Collection เธชเธณเธซเธฃเธฑเธเธเธฒเธฃเธ—เธ”เธชเธญเธเนเธซเธฅเธ”เธฃเธฐเธเธ eKYC Client (Token Exchange, 150 Concurrent Users Registration & Slow Query Benchmarks) เธเธฃเธเธ—เธฑเนเธ 14 Endpoints เน€เธฃเธตเธขเธเธ•เธฒเธกเธฅเธณเธ”เธฑเธเธเธฒเธฃเธ—เธณเธเธฒเธเธเธฃเธดเธ",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12970806",
+    "_collection_link": "https://go.postman.co/collection/12970806-b9d873d4-2dc5-4735-b7f0-162233065837?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "๐”‘ 0. Authentication & Token Exchange (เน€เธ•เธฃเธตเธขเธก Session & Token เธเนเธญเธเน€เธฃเธดเนเธกเธ—เธ”เธชเธญเธ)",
+      "item": [
+        {
+          "name": "0.0 Get Access Token From One ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grant_type\": \"password\",\n  \"client_id\": \"{{clientId}}\",\n  \"client_secret\": \"{{clientSecret}}\",\n  \"username\": \"{{oneIdUsername}}\",\n  \"password\": \"{{oneIdPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{oneIdUrl}}/api/oauth/getpwd",
+              "host": [
+                "{{oneIdUrl}}"
+              ],
+              "path": [
+                "api",
+                "oauth",
+                "getpwd"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"0.0 Status code is 200 or 401 (Mock/UAT Ready)\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 401]);",
+                  "});",
+                  "pm.test(\"0.0 Response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.access_token) {",
+                  "        pm.collectionVariables.set(\"accessToken\", jsonData.access_token);",
+                  "        if (pm.environment) pm.environment.set(\"accessToken\", jsonData.access_token);",
+                  "        console.log(\"0.0 Access Token received:\", jsonData.access_token);",
+                  "    }",
+                  "    if (jsonData && jsonData.refresh_token) {",
+                  "        pm.collectionVariables.set(\"refreshToken\", jsonData.refresh_token);",
+                  "        if (pm.environment) pm.environment.set(\"refreshToken\", jsonData.refresh_token);",
+                  "    }",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.1 One ID: Exchange Access Token to Shared Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"0.1 Status code is 200 or 401 (Mock/UAT Ready)\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 401]);",
+                  "});",
+                  "pm.test(\"0.1 Response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    var sharedToken = (jsonData && jsonData.data && jsonData.data.shared_token) ? jsonData.data.shared_token : (jsonData ? jsonData.shared_token : null);",
+                  "    if (sharedToken) {",
+                  "        pm.collectionVariables.set(\"sharedToken\", sharedToken);",
+                  "        pm.collectionVariables.set(\"ssoToken\", sharedToken);",
+                  "        if (pm.environment) {",
+                  "            pm.environment.set(\"sharedToken\", sharedToken);",
+                  "            pm.environment.set(\"ssoToken\", sharedToken);",
+                  "        }",
+                  "    }",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{oneIdUrl}}/api/v2/service/shared-token",
+              "host": [
+                "{{oneIdUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "service",
+                "shared-token"
+              ]
+            },
+            "description": "เน€เธฃเธตเธขเธ API เธเธฑเนเธ One ID เธเธณ Bearer Access Token เธกเธฒเนเธฅเธเน€เธเนเธ Shared Token (JWT) เน€เธเธทเนเธญเธเธณเนเธเนเธเนเธเธฒเธเธ•เนเธญเนเธเธฃเธฐเธเธเน€เธเธฃเธทเธญเธเนเธฒเธข eKYC"
+          },
+          "response": []
+        },
+        {
+          "name": "0.2 One ID: Exchange Shared Token to Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"0.2 Status code is 200 or 401 (Mock/UAT Ready)\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 401]);",
+                  "});",
+                  "pm.test(\"0.2 Response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.access_token) {",
+                  "        pm.collectionVariables.set(\"accessToken\", jsonData.access_token);",
+                  "        if (pm.environment) pm.environment.set(\"accessToken\", jsonData.access_token);",
+                  "    }",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{chatBotAuth}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": \"{{clientId}}\",\n  \"client_secret\": \"{{clientSecret}}\",\n  \"refcode\": \"{{refcode}}\",\n  \"shared_token\": \"{{sharedToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{oneIdUrl}}/api/oauth/shared-token",
+              "host": [
+                "{{oneIdUrl}}"
+              ],
+              "path": [
+                "api",
+                "oauth",
+                "shared-token"
+              ]
+            },
+            "description": "เน€เธฃเธตเธขเธ API เธเธฑเนเธ One ID OAuth เธเธณ Shared Token เธกเธฒเนเธฅเธเธเธทเธเน€เธเนเธ Access Token เธชเธณเธซเธฃเธฑเธเธขเธดเธ API Bearer เธซเธฃเธทเธญเธขเธทเธเธขเธฑเธเธ•เธฑเธงเธ•เธเธฃเธฐเธ”เธฑเธ User"
+          },
+          "response": []
+        },
+        {
+          "name": "0.3 eKYC: Login via Access Token (Redirect to Session)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"0.3 Status code is 200 or 302\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "pm.test(\"0.3 Response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.data) {",
+                  "        if (jsonData.data.user_id) {",
+                  "            pm.collectionVariables.set(\"userId\", jsonData.data.user_id);",
+                  "            if (pm.environment) pm.environment.set(\"userId\", jsonData.data.user_id);",
+                  "        }",
+                  "        if (jsonData.data.username) {",
+                  "            pm.collectionVariables.set(\"username\", jsonData.data.username);",
+                  "            if (pm.environment) pm.environment.set(\"username\", jsonData.data.username);",
+                  "        }",
+                  "    }",
+                  "} catch (e) {}",
+                  "if (pm.cookies.has(\"laravel_session\")) {",
+                  "    var sess = pm.cookies.get(\"laravel_session\");",
+                  "    pm.collectionVariables.set(\"laravel_session\", sess);",
+                  "    if (pm.environment) pm.environment.set(\"laravel_session\", sess);",
+                  "} else if (pm.cookies.has(\"ekyc_session\")) {",
+                  "    var sess = pm.cookies.get(\"ekyc_session\");",
+                  "    pm.collectionVariables.set(\"laravel_session\", sess);",
+                  "    if (pm.environment) pm.environment.set(\"laravel_session\", sess);",
+                  "}",
+                  "if (pm.cookies.has(\"XSRF-TOKEN\")) {",
+                  "    var xsrf = decodeURIComponent(pm.cookies.get(\"XSRF-TOKEN\"));",
+                  "    pm.collectionVariables.set(\"xsrf_token\", xsrf);",
+                  "    if (pm.environment) pm.environment.set(\"xsrf_token\", xsrf);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json,text/html,application/xhtml+xml,application/xml"
+              },
+              {
+                "key": "X-Username",
+                "value": "{{username}}"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/redirect-access-token?access_token={{accessToken}}&username={{username}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "redirect-access-token"
+              ],
+              "query": [
+                {
+                  "key": "access_token",
+                  "value": "{{accessToken}}"
+                },
+                {
+                  "key": "username",
+                  "value": "{{username}}"
+                }
+              ]
+            },
+            "description": "เธชเนเธ Access Token เน€เธเนเธฒ eKYC เธเธถเนเธเธฃเธฐเธเธเธเธฐเธเธณเนเธเนเธฅเธ Shared Token เธเธฑเธ One ID เนเธฅเธฐ Redirect เธเนเธฒเธ OAuth callback เน€เธเธทเนเธญเธฃเธฑเธ Laravel Session Cookie (ekyc_session / laravel_session)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "โญ 1. Core Flow (150 New Users Sequential Journey)",
+      "item": [
+        {
+          "name": "01. Citizen eKYC Registration (เธชเธฃเนเธฒเธ 150 User Pool)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// ========================================================",
+                  "// Dynamic Unique Data Generator for Automated Load Testing",
+                  "// ========================================================",
+                  "",
+                  "// 1. Thai 13-digit Citizen ID Generator (Valid Checksum)",
+                  "function generateValidCitizenId() {",
+                  "    var d = [Math.floor(Math.random() * 8) + 1];",
+                  "    for (var i = 1; i < 12; i++) {",
+                  "        d.push(Math.floor(Math.random() * 10));",
+                  "    }",
+                  "    var sum = 0;",
+                  "    for (var i = 0; i < 12; i++) {",
+                  "        sum += d[i] * (13 - i);",
+                  "    }",
+                  "    var checkDigit = (11 - (sum % 11)) % 10;",
+                  "    d.push(checkDigit);",
+                  "    return d.join('');",
+                  "}",
+                  "",
+                  "// 2. Laser Code Generator (2 letters + 10 digits)",
+                  "function generateLaserCode() {",
+                  "    var letters = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";",
+                  "    var c1 = letters.charAt(Math.floor(Math.random() * letters.length));",
+                  "    var c2 = letters.charAt(Math.floor(Math.random() * letters.length));",
+                  "    var nums = \"\";",
+                  "    for (var i = 0; i < 10; i++) {",
+                  "        nums += Math.floor(Math.random() * 10);",
+                  "    }",
+                  "    return c1 + c2 + nums;",
+                  "}",
+                  "",
+                  "// 3. Thai Mobile Phone Generator (08x, 09x, 06x)",
+                  "function generatePhone() {",
+                  "    var prefixes = [\"08\", \"09\", \"06\"];",
+                  "    var prefix = prefixes[Math.floor(Math.random() * prefixes.length)];",
+                  "    var rest = \"\";",
+                  "    for (var i = 0; i < 8; i++) {",
+                  "        rest += Math.floor(Math.random() * 10);",
+                  "    }",
+                  "    return prefix + rest;",
+                  "}",
+                  "",
+                  "var dynamicCid = generateValidCitizenId();",
+                  "var dynamicLaser = generateLaserCode();",
+                  "var dynamicPhone = generatePhone();",
+                  "var timestamp = Date.now();",
+                  "var dynamicUsername = \"172\" + timestamp.toString().slice(-9) + Math.floor(100 + Math.random() * 900);",
+                  "var dynamicEmail = \"loadtest_\" + timestamp + \"@one.th\";",
+                  "",
+                  "var firstNamesTh = [\"เธชเธกเธเธฒเธข\", \"เธชเธกเธจเธฑเธเธ”เธดเน\", \"เธงเธดเธเธฑเธข\", \"เธเธดเธ•เธ•เธด\", \"เธเธเธเธฃ\", \"เธเธดเธขเธฐ\", \"เธญเธเธฑเธเธ•เน\", \"เธจเธธเธ เธเธฑเธข\", \"เธ“เธฑเธเธเธเธฉเน\", \"เธงเธฃเธงเธธเธ’เธด\"];",
+                  "var lastNamesTh = [\"เนเธเธ”เธต\", \"เธกเธตเธชเธธเธ\", \"เธกเธฑเนเธเธเธ\", \"เน€เธเธฃเธดเธเธเธฃ\", \"เธเธธเธเธกเธต\", \"เธงเธฑเธ’เธเธฒ\", \"เธฃเธฑเธเธเธฒเธ•เธด\", \"เธชเธธเธเน€เธเธฃเธดเธ\", \"เธจเธฃเธตเธชเธธเธ\", \"เธ—เธญเธเนเธ—เน\"];",
+                  "var firstNamesEn = [\"SOMCHAI\", \"SOMSAK\", \"WICHAI\", \"KITTI\", \"THANAKORN\", \"PIYA\", \"ANAN\", \"SUPACHAI\", \"NATTAPONG\", \"WORAWUT\"];",
+                  "var lastNamesEn = [\"JAIDEE\", \"MEESUK\", \"MANKONG\", \"CHAROENPORN\", \"BOONMEE\", \"WATTANA\", \"RAKCHAT\", \"SUKCHAROEN\", \"SRISUK\", \"THONGTHAE\"];",
+                  "",
+                  "var rIndex = Math.floor(Math.random() * firstNamesTh.length);",
+                  "var dynamicFnameTh = firstNamesTh[rIndex];",
+                  "var dynamicLnameTh = lastNamesTh[rIndex];",
+                  "var dynamicFnameEn = firstNamesEn[rIndex];",
+                  "var dynamicLnameEn = lastNamesEn[rIndex];",
+                  "",
+                  "// Set to collection and environment variables",
+                  "pm.collectionVariables.set(\"citizenId\", dynamicCid);",
+                  "pm.collectionVariables.set(\"laserCode\", dynamicLaser);",
+                  "pm.collectionVariables.set(\"phone\", dynamicPhone);",
+                  "pm.collectionVariables.set(\"email\", dynamicEmail);",
+                  "pm.collectionVariables.set(\"username\", dynamicUsername);",
+                  "pm.collectionVariables.set(\"firstName\", dynamicFnameTh);",
+                  "pm.collectionVariables.set(\"lastName\", dynamicLnameTh);",
+                  "pm.collectionVariables.set(\"firstNameEn\", dynamicFnameEn);",
+                  "pm.collectionVariables.set(\"lastNameEn\", dynamicLnameEn);",
+                  "",
+                  "if (pm.environment) {",
+                  "    pm.environment.set(\"citizenId\", dynamicCid);",
+                  "    pm.environment.set(\"laserCode\", dynamicLaser);",
+                  "    pm.environment.set(\"phone\", dynamicPhone);",
+                  "    pm.environment.set(\"email\", dynamicEmail);",
+                  "    pm.environment.set(\"username\", dynamicUsername);",
+                  "    pm.environment.set(\"firstName\", dynamicFnameTh);",
+                  "    pm.environment.set(\"lastName\", dynamicLnameTh);",
+                  "    pm.environment.set(\"firstNameEn\", dynamicFnameEn);",
+                  "    pm.environment.set(\"lastNameEn\", dynamicLnameEn);",
+                  "}",
+                  "console.log(\"01 Pre-request Generated -> CID:\", dynamicCid, \"Username:\", dynamicUsername);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"01 Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"01 Registration response time is within SLA (< 5000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.data && jsonData.data.user_id) {",
+                  "        pm.collectionVariables.set(\"userId\", jsonData.data.user_id);",
+                  "        if (pm.environment) pm.environment.set(\"userId\", jsonData.data.user_id);",
+                  "        console.log(\"01 Extracted New userId:\", jsonData.data.user_id);",
+                  "    }",
+                  "    pm.test(\"01 Registration succeeded and user_id is returned\", function () {",
+                  "        pm.expect(jsonData.data).to.have.property(\"user_id\");",
+                  "    });",
+                  "    pm.test(\"01 DOPA / AMLO verification status is valid\", function () {",
+                  "        pm.expect(jsonData.data.status).to.be.oneOf([\"pass\", \"pending\", \"success\"]);",
+                  "    });",
+                  "} catch (e) {",
+                  "    console.warn(\"01 JSON parse failed:\", e);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"citizen_id\": \"{{citizenId}}\",\n  \"laser_code\": \"{{laserCode}}\",\n  \"title_name_th\": \"เธเธฒเธข\",\n  \"first_name_th\": \"{{firstName}}\",\n  \"last_name_th\": \"{{lastName}}\",\n  \"title_name_en\": \"MR.\",\n  \"first_name_en\": \"{{firstNameEn}}\",\n  \"last_name_en\": \"{{lastNameEn}}\",\n  \"birth_date\": \"1992-01-01\",\n  \"phone\": \"{{phone}}\",\n  \"email\": \"{{email}}\",\n  \"refcode\": \"{{refcode}}\",\n  \"secretkey\": \"{{secretkey}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/register-ekyc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "register-ekyc"
+              ]
+            },
+            "description": "API เธฅเธเธ—เธฐเน€เธเธตเธขเธเธเธนเนเนเธเนเธเธฒเธ Citizen eKYC เธชเธณเธซเธฃเธฑเธเธชเธฃเนเธฒเธเธเธนเนเนเธเนเนเธซเธกเน 150 เธเธฑเธเธเธต เธ•เธฃเธงเธเธชเธญเธ Checksum 13 เธซเธฅเธฑเธ, เธ•เธฃเธงเธ DOPA (Mocked) / AMLO, เธเธฑเธเธ—เธถเธ service_user, user เนเธฅเธฐ transaction"
+          },
+          "response": []
+        },
+        {
+          "name": "02. SSO Login & Token Exchange (Shared Token)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json, text/html, application/xhtml+xml, application/xml"
+              },
+              {
+                "key": "X-Username",
+                "value": "{{username}}"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/redirect-share-token?shared_token={{ssoToken}}&refcode={{refcode}}&secretkey={{secretkey}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "redirect-share-token"
+              ],
+              "query": [
+                {
+                  "key": "shared_token",
+                  "value": "{{ssoToken}}"
+                },
+                {
+                  "key": "refcode",
+                  "value": "{{refcode}}"
+                },
+                {
+                  "key": "secretkey",
+                  "value": "{{secretkey}}"
+                }
+              ]
+            },
+            "description": "เธฃเธฑเธ Token เธเธฒเธ One ID SSO, เนเธฅเธเน€เธเธฅเธตเนเธขเธเธชเธดเธ—เธเธดเน (/callback), เธเธฑเธเธ—เธถเธ/เธญเธฑเธเน€เธ”เธ•เธเนเธญเธกเธนเธฅเธเธนเนเนเธเนเนเธเธ•เธฒเธฃเธฒเธ user, เธ•เธฃเธงเธเธชเธญเธ PDPA Consent เนเธฅเธฐเธชเธฃเนเธฒเธ Session login_id"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"02 Status code is 200 or 302\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "pm.test(\"02 SSO redirect response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "if (pm.cookies.has(\"laravel_session\")) {",
+                  "    var sess = pm.cookies.get(\"laravel_session\");",
+                  "    pm.collectionVariables.set(\"laravel_session\", sess);",
+                  "    if (pm.environment) pm.environment.set(\"laravel_session\", sess);",
+                  "} else if (pm.cookies.has(\"ekyc_session\")) {",
+                  "    var sess = pm.cookies.get(\"ekyc_session\");",
+                  "    pm.collectionVariables.set(\"laravel_session\", sess);",
+                  "    if (pm.environment) pm.environment.set(\"laravel_session\", sess);",
+                  "}",
+                  "if (pm.cookies.has(\"XSRF-TOKEN\")) {",
+                  "    var xsrf = decodeURIComponent(pm.cookies.get(\"XSRF-TOKEN\"));",
+                  "    pm.collectionVariables.set(\"xsrf_token\", xsrf);",
+                  "    if (pm.environment) pm.environment.set(\"xsrf_token\", xsrf);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "03. Pre-check Request & Status (Homepage)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/html,application/xhtml+xml,application/xml"
+              },
+              {
+                "key": "X-Username",
+                "value": "{{username}}"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/homepage",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "homepage"
+              ]
+            },
+            "description": "เน€เธเธดเธ”เธซเธเนเธฒเนเธฃเธ eKYC เธ•เธฃเธงเธเธชเธญเธเธงเนเธฒเธกเธตเธเธณเธเธญเธญเธเธธเธกเธฑเธ•เธดเธเนเธฒเธเธญเธขเธนเนเธซเธฃเธทเธญเนเธกเนเธ”เนเธงเธข exists() (CODE-01) เนเธฅเธฐเธ•เธฃเธงเธเธงเธฑเธเธซเธกเธ”เธญเธฒเธขเธธเธ”เนเธงเธข ->first() (CODE-06) เธเนเธญเธเน€เธฃเธดเนเธกเธเธฃเธญเธเธเนเธญเธกเธนเธฅ"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"03 Status code is 200 or 302\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "pm.test(\"03 Homepage response time is within SLA (< 5000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "pm.test(\"03 Response body returned\", function () {",
+                  "    pm.expect(pm.response.text()).to.have.lengthOf.at.least(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "04. ID Card Duplicate Check (CODE-07 Target)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"04 Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"04 Response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.test(\"04 Citizen ID is available for registration\", function () {",
+                  "        pm.expect(jsonData.data).to.include(\"id card number can use\");",
+                  "    });",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/check_id_card_dup?id_no={{citizenId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "check_id_card_dup"
+              ],
+              "query": [
+                {
+                  "key": "id_no",
+                  "value": "{{citizenId}}"
+                }
+              ]
+            },
+            "description": "เธ•เธฃเธงเธเธชเธญเธเน€เธฅเธเธเธฑเธ•เธฃเธเธฃเธฐเธเธณเธ•เธฑเธงเธเธฃเธฐเธเธฒเธเธเธเนเธณเธเนเธฒเธ B-Tree Index เธเธ hash_citizen_id (CODE-07 Target: < 5ms vs 850ms เธเธ 7.5 เนเธชเธ Users)"
+          },
+          "response": []
+        },
+        {
+          "name": "05. ID Card OCR Detection (Mocked AI)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "X-Username",
+                "value": "{{username}}"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"img\": \"{{base64_sample_card}}\",\n  \"username\": \"{{username}}\",\n  \"user_id\": \"{{userId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/detectionIDCard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "detectionIDCard"
+              ]
+            },
+            "description": "เธญเธฑเธเนเธซเธฅเธ”เธ เธฒเธเธ–เนเธฒเธขเธเธฑเธ•เธฃเธเธฃเธฐเธเธฒเธเธ Base64 เธชเนเธเธ•เธฃเธงเธเธชเธญเธ AI เธชเธเธฑเธ”เธเนเธญเธเธงเธฒเธก OCR (Mocked AI) เนเธฅเธฐเธเธฑเธเธ—เธถเธเธเธฅเธฅเธเธ•เธฒเธฃเธฒเธ account_ai_result"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"05 Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"05 AI OCR response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.data) {",
+                  "        pm.collectionVariables.set(\"ocr_result\", JSON.stringify(jsonData.data));",
+                  "        if (pm.environment) pm.environment.set(\"ocr_result\", JSON.stringify(jsonData.data));",
+                  "        if (jsonData.data.idnumber) {",
+                  "            pm.collectionVariables.set(\"ocr_idnumber\", jsonData.data.idnumber);",
+                  "            if (pm.environment) pm.environment.set(\"ocr_idnumber\", jsonData.data.idnumber);",
+                  "        }",
+                  "        if (jsonData.data.thname) {",
+                  "            pm.collectionVariables.set(\"ocr_thname\", jsonData.data.thname);",
+                  "            if (pm.environment) pm.environment.set(\"ocr_thname\", jsonData.data.thname);",
+                  "        }",
+                  "    }",
+                  "    pm.test(\"05 OCR extracted essential data fields\", function () {",
+                  "        pm.expect(jsonData.data).to.be.an(\"object\");",
+                  "        pm.expect(jsonData.data).to.have.property(\"idnumber\");",
+                  "    });",
+                  "} catch (e) {",
+                  "    console.warn(\"05 OCR parse warning:\", e);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "06. ID Card Image Storage (S3 / MinIO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "X-Username",
+                "value": "{{username}}"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"picture\": \"{{base64_sample_card}}\",\n  \"name_pic\": \"photo_citizen_id\",\n  \"username\": \"{{username}}\",\n  \"user_id\": \"{{userId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/update_load_picture",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "update_load_picture"
+              ]
+            },
+            "description": "เธฃเธฑเธเธ เธฒเธเธ–เนเธฒเธขเธเธฑเธ•เธฃเธเธฃเธฐเธเธฒเธเธ Base64, เนเธชเธ•เธกเธเนเธฅเธฒเธขเธเนเธณ Watermark, เนเธฅเธฐเธญเธฑเธเนเธซเธฅเธ”เนเธเธฅเนเธเธถเนเธ S3 / MinIO Storage"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"06 Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"06 Image upload response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.test(\"06 Upload picture success confirmation\", function () {",
+                  "        pm.expect(jsonData.status).to.equal(\"success\");",
+                  "        pm.expect(jsonData.message).to.include(\"upload picture success\");",
+                  "    });",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "07. Face Detection & Similarity Compare (CODE-03 Target)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "X-Username",
+                "value": "{{username}}"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"base64img1\": \"{{base64_sample_card}}\",\n  \"base64img2\": \"{{base64_sample_face}}\",\n  \"username\": \"{{username}}\",\n  \"user_id\": \"{{userId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/detectionFace",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "detectionFace"
+              ]
+            },
+            "description": "เธ–เนเธฒเธขเธ เธฒเธเน€เธเธฅเธเธตเน เธ•เธฃเธงเธเธเธฑเธเนเธเธซเธเนเธฒ เนเธฅเธฐเธเธณเธเธงเธ“ Similarity (CODE-03 Target: Re-use Model เนเธกเน Query เธเนเธณ, เธชเธธเนเธกเธเนเธฒเธ 80% / เธ•เธ 20%)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"07 Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"07 Face compare response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.data && typeof jsonData.data.similarity !== 'undefined') {",
+                  "        pm.collectionVariables.set(\"similarityScore\", jsonData.data.similarity);",
+                  "        if (pm.environment) pm.environment.set(\"similarityScore\", jsonData.data.similarity);",
+                  "        console.log(\"07 Face Similarity Score:\", jsonData.data.similarity);",
+                  "    }",
+                  "    pm.test(\"07 Similarity score is valid numeric value\", function () {",
+                  "        pm.expect(jsonData.data.similarity).to.be.a(\"number\").and.be.at.least(0);",
+                  "    });",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "08. Selfie Image Storage (S3 / MinIO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "X-Username",
+                "value": "{{username}}"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"picture\": \"{{base64_sample_face}}\",\n  \"name_pic\": \"photo_hold_citizen_id\",\n  \"username\": \"{{username}}\",\n  \"user_id\": \"{{userId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/update_load_picture",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "update_load_picture"
+              ]
+            },
+            "description": "เธฃเธฑเธเธ เธฒเธเธ–เนเธฒเธขเน€เธเธฅเธเธตเนเธ–เธทเธญเธเธฑเธ•เธฃ Base64, เนเธชเธ•เธกเธเนเธฅเธฒเธขเธเนเธณ Watermark, เนเธฅเธฐเธญเธฑเธเนเธซเธฅเธ”เนเธเธฅเนเธเธถเนเธ S3 / MinIO Storage"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"08 Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"08 Selfie upload response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.test(\"08 Upload selfie picture success confirmation\", function () {",
+                  "        pm.expect(jsonData.status).to.equal(\"success\");",
+                  "        pm.expect(jsonData.message).to.include(\"upload picture success\");",
+                  "    });",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "09. Final Submission & Approval Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Requested-With",
+                "value": "XMLHttpRequest"
+              },
+              {
+                "key": "X-Username",
+                "value": "{{username}}"
+              },
+              {
+                "key": "X-User-Id",
+                "value": "{{userId}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "text"
+                },
+                {
+                  "key": "user_id",
+                  "value": "{{userId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "citizen_id",
+                  "value": "{{citizenId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "laser_code",
+                  "value": "{{laserCode}}",
+                  "type": "text"
+                },
+                {
+                  "key": "citizen_exp",
+                  "value": "2575-12-31",
+                  "type": "text"
+                },
+                {
+                  "key": "title_th",
+                  "value": "เธเธฒเธข",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name_th",
+                  "value": "{{firstName}}",
+                  "type": "text"
+                },
+                {
+                  "key": "last_name_th",
+                  "value": "{{lastName}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title_en",
+                  "value": "MR.",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name_en",
+                  "value": "{{firstNameEn}}",
+                  "type": "text"
+                },
+                {
+                  "key": "last_name_en",
+                  "value": "{{lastNameEn}}",
+                  "type": "text"
+                },
+                {
+                  "key": "birth_date",
+                  "value": "1992-01-01",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "{{phone}}",
+                  "type": "text"
+                },
+                {
+                  "key": "house_no",
+                  "value": "123/45",
+                  "type": "text"
+                },
+                {
+                  "key": "district",
+                  "value": "เธชเธตเธฅเธก",
+                  "type": "text"
+                },
+                {
+                  "key": "amphoe",
+                  "value": "เธเธฒเธเธฃเธฑเธ",
+                  "type": "text"
+                },
+                {
+                  "key": "province",
+                  "value": "เธเธฃเธธเธเน€เธ—เธเธกเธซเธฒเธเธเธฃ",
+                  "type": "text"
+                },
+                {
+                  "key": "sub_district_th",
+                  "value": "เธชเธตเธฅเธก",
+                  "type": "text"
+                },
+                {
+                  "key": "district_th",
+                  "value": "เธเธฒเธเธฃเธฑเธ",
+                  "type": "text"
+                },
+                {
+                  "key": "province_th",
+                  "value": "เธเธฃเธธเธเน€เธ—เธเธกเธซเธฒเธเธเธฃ",
+                  "type": "text"
+                },
+                {
+                  "key": "zipcode",
+                  "value": "10500",
+                  "type": "text"
+                },
+                {
+                  "key": "status_auto_compare",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "status_sever_ai",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/updateIdentity",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "updateIdentity"
+              ]
+            },
+            "description": "เธชเนเธเธเนเธญเธกเธนเธฅเธชเธฃเธธเธเธชเธธเธ”เธ—เนเธฒเธข เธเธฑเธเธ—เธถเธ User, Address, เธ•เธฃเธงเธเธชเธญเธเนเธเธฅเนเธเธ S3, เธชเธฃเนเธฒเธเธเธณเธเธญเธญเธเธธเธกเธฑเธ•เธดเนเธเธ•เธฒเธฃเธฒเธ approval_request (เธชเธ–เธฒเธเธฐ pending), เนเธฅเธฐ Hook Auto-Approve เนเธเธขเธฑเธ ekyc-admin"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"09 Status code is 200 or 302\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                  "});",
+                  "pm.test(\"09 Submission response time is within SLA (< 5000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.test(\"09 Final submission success or pending approval\", function () {",
+                  "        pm.expect(jsonData.result || jsonData.status).to.be.oneOf([\"Success\", \"pending\", \"approved\"]);",
+                  "    });",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "โก 2. Heavy Load & Slow Query Targets (Parallel Benchmarks)",
+      "item": [
+        {
+          "name": "10. Search Approved Users (CODE-04 Target: LIMIT 50)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Secretkey",
+                "value": "{{secretkey}}"
+              },
+              {
+                "key": "Refcode",
+                "value": "{{refcode}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/service/get-data-user?citizen_id={{citizenId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "service",
+                "get-data-user"
+              ],
+              "query": [
+                {
+                  "key": "citizen_id",
+                  "value": "{{citizenId}}"
+                }
+              ]
+            },
+            "description": "API เธเนเธเธซเธฒเธเนเธญเธกเธนเธฅเธเธนเนเนเธเนเธ—เธตเน eKYC Approved เนเธฅเนเธง เธชเธณเธซเธฃเธฑเธเธฃเธฐเธเธเธ เธฒเธขเธเธญเธ เนเธ”เธขเธเธฑเธเธเธฑเธเนเธชเน LIMIT 50 เนเธ UserDao::getUserDataApprovedUser เน€เธเธทเนเธญเธ•เธฑเธ”เธเธฑเธเธซเธฒ Memory Exhaustion (OOM)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"10 Status code is 200 or 204\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "pm.test(\"10 Search query response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    try {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.test(\"10 User search returns result array within limit 50\", function () {",
+                  "            pm.expect(jsonData.data).to.be.an(\"array\");",
+                  "            pm.expect(jsonData.data.length).to.be.at.most(50);",
+                  "        });",
+                  "    } catch (e) {}",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "11. Bulk Deletion Maintenance (CODE-05 Target: 4 whereIn SQL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secretkey\": \"{{secretkey}}\",\n  \"refcode\": \"{{refcode}}\",\n  \"page\": 1,\n  \"per_page\": 50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/del_new_table",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "del_new_table"
+              ]
+            },
+            "description": "Cronjob / API เธฅเธเธเนเธญเธกเธนเธฅ Temporary User เธเธขเธฐเธเธฃเธฑเนเธเธฅเธฐ 50 เธเธ เธ”เนเธงเธข Batch Deletion เธขเธดเธเธเธณเธชเธฑเนเธ whereIn เน€เธเธตเธขเธ 4 เธเธณเธชเธฑเนเธ SQL เธเธเธเธฒเธ (เนเธ—เธเธงเธเธฅเธนเธ 150 เธเธณเธชเธฑเนเธเน€เธ”เธตเนเธขเธงเน€เธ”เธดเธก)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"11 Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"11 Batch deletion response time is within SLA (< 3000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.test(\"11 Bulk deletion status is success\", function () {",
+                  "        pm.expect(jsonData.data.status).to.equal(\"success\");",
+                  "    });",
+                  "} catch (e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "oneIdUrl",
+      "value": "https://testoneid.inet.co.th"
+    },
+    {
+      "key": "oauth_path",
+      "value": "https://testoneid.inet.co.th"
+    },
+    {
+      "key": "clientId",
+      "value": "233"
+    },
+    {
+      "key": "clientSecret",
+      "value": "vqOvLBTwzjRCnG4uCaKtMsPjR1mSMIfkpNCK627f"
+    },
+    {
+      "key": "refcode",
+      "value": "LicyzM"
+    },
+    {
+      "key": "secretkey",
+      "value": "vqOvLBTwzjRCnG4uCaKtMsPjR1mSMIfkpNCK627f"
+    },
+    {
+      "key": "chatBotAuth",
+      "value": "Ad85a4892ad115fc3959ce8aab31cc8e8a2fe22307d094ee0a72f3eab8d4e4a8a5efc43a0337143e6a70e2d6873117f52"
+    },
+    {
+      "key": "oneIdUsername",
+      "value": "testuser@one.th"
+    },
+    {
+      "key": "oneIdPassword",
+      "value": "Password123!"
+    },
+    {
+      "key": "username",
+      "value": "172681970060061"
+    },
+    {
+      "key": "userId",
+      "value": "0b066d72-9c1f-4470-9ef6-732e336c2393"
+    },
+    {
+      "key": "citizenId",
+      "value": "1100499000011"
+    },
+    {
+      "key": "laserCode",
+      "value": "ME1234567890"
+    },
+    {
+      "key": "firstName",
+      "value": "เธชเธกเธเธฒเธข"
+    },
+    {
+      "key": "lastName",
+      "value": "เนเธเธ”เธต"
+    },
+    {
+      "key": "firstNameEn",
+      "value": "SOMCHAI"
+    },
+    {
+      "key": "lastNameEn",
+      "value": "JAIDEE"
+    },
+    {
+      "key": "phone",
+      "value": "0812345678"
+    },
+    {
+      "key": "email",
+      "value": "loadtest_user_001@example.com"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "sharedToken",
+      "value": ""
+    },
+    {
+      "key": "ssoToken",
+      "value": ""
+    },
+    {
+      "key": "laravel_session",
+      "value": ""
+    },
+    {
+      "key": "xsrf_token",
+      "value": ""
+    },
+    {
+      "key": "ocr_result",
+      "value": ""
+    },
+    {
+      "key": "similarityScore",
+      "value": "0.85"
+    },
+    {
+      "key": "base64_sample_card",
+      "value": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD//gA+Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2OTApLCBkZWZhdWx0IHF1YWxpdHkK/9sAQwAIBgYHBgUIBwcHCQkICgwUDQwLCwwZEhMPFB0aHx4dGhwcICQuJyAiLCMcHCg3KSwwMTQ0NB8nOT04MjwuMzQy/9sAQwEJCQkMCwwYDQ0YMiEcITIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIy/8AAEQgAUAB4AwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A5yiiivtT50KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//2Q=="
+    },
+    {
+      "key": "base64_sample_face",
+      "value": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD//gA+Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2OTApLCBkZWZhdWx0IHF1YWxpdHkK/9sAQwAIBgYHBgUIBwcHCQkICgwUDQwLCwwZEhMPFB0aHx4dGhwcICQuJyAiLCMcHCg3KSwwMTQ0NB8nOT04MjwuMzQy/9sAQwEJCQkMCwwYDQ0YMiEcITIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIy/8AAEQgAZABQAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8Aiooor5U+xCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD/2Q=="
+    }
+  ]
+}

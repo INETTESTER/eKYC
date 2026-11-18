@@ -1,0 +1,311 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "200 OK": {
+                    "passes": 1050,
+                    "fails": 150,
+                    "name": "200 OK",
+                    "path": "::200 OK",
+                    "id": "e9654c443eff553da9e69eda7007924e"
+                },
+                "201 Created": {
+                    "name": "201 Created",
+                    "path": "::201 Created",
+                    "id": "728dcd977aae263ca314731145e1d447",
+                    "passes": 0,
+                    "fails": 1200
+                },
+                "204 No Content": {
+                    "name": "204 No Content",
+                    "path": "::204 No Content",
+                    "id": "54fa3c2eda34e1622fda2da5e0479fc5",
+                    "passes": 0,
+                    "fails": 1200
+                },
+                "400 Bad Request": {
+                    "id": "eeae81934b9b58bccaf0184a6d070338",
+                    "passes": 150,
+                    "fails": 1050,
+                    "name": "400 Bad Request",
+                    "path": "::400 Bad Request"
+                },
+                "401 Unauthorized": {
+                    "id": "6ae9254e6aefe7f0bafe5102fa7e20a5",
+                    "passes": 0,
+                    "fails": 1200,
+                    "name": "401 Unauthorized",
+                    "path": "::401 Unauthorized"
+                },
+                "403 Forbidden": {
+                    "id": "655548b761742c5a7ad15aa7df3a5d9c",
+                    "passes": 0,
+                    "fails": 1200,
+                    "name": "403 Forbidden",
+                    "path": "::403 Forbidden"
+                },
+                "404 Not Found": {
+                    "name": "404 Not Found",
+                    "path": "::404 Not Found",
+                    "id": "df1528f9925ca236bac51008f77b774a",
+                    "passes": 0,
+                    "fails": 1200
+                },
+                "422 Unprocessable Content": {
+                    "name": "422 Unprocessable Content",
+                    "path": "::422 Unprocessable Content",
+                    "id": "d94c37ab64a32602add978a71bd22822",
+                    "passes": 0,
+                    "fails": 1200
+                },
+                "429 Too Many Requests": {
+                    "name": "429 Too Many Requests",
+                    "path": "::429 Too Many Requests",
+                    "id": "b810c35b9499cc7342fd415032e3a6aa",
+                    "passes": 0,
+                    "fails": 1200
+                },
+                "500 Internal Server Error": {
+                    "name": "500 Internal Server Error",
+                    "path": "::500 Internal Server Error",
+                    "id": "3cd96245b24e869810efe46d533b0eef",
+                    "passes": 0,
+                    "fails": 1200
+                },
+                "502 Bad Gateway": {
+                    "name": "502 Bad Gateway",
+                    "path": "::502 Bad Gateway",
+                    "id": "712cb0ec189a11f31f0d6d0c0031b569",
+                    "passes": 0,
+                    "fails": 1200
+                },
+                "503 Service Unavailable": {
+                    "name": "503 Service Unavailable",
+                    "path": "::503 Service Unavailable",
+                    "id": "f1ea1a22be0dc738c385523a66ea1cd9",
+                    "passes": 0,
+                    "fails": 1200
+                },
+                "504 Gateway Timeout": {
+                    "name": "504 Gateway Timeout",
+                    "path": "::504 Gateway Timeout",
+                    "id": "218efb729cb654723ccd57c6ebbebe29",
+                    "passes": 0,
+                    "fails": 1200
+                }
+            }
+    },
+    "metrics": {
+        "ID_Card_OCR": {
+            "med": 15.3067,
+            "max": 28.5918,
+            "p(90)": 17.31732,
+            "p(95)": 18.230365,
+            "avg": 15.65732,
+            "min": 12.8247
+        },
+        "http_req_waiting": {
+            "max": 208.3323,
+            "p(90)": 68.02261000000001,
+            "p(95)": 75.37268999999998,
+            "avg": 31.264971916666678,
+            "min": 0.5122,
+            "med": 15.813849999999999
+        },
+        "Face_Detection_error": {
+            "count": 150,
+            "rate": 2.4643682053148352
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "max": 9.2912,
+            "p(90)": 7.261730000000002,
+            "p(95)": 7.613894999999999,
+            "avg": 0.9540170833333338,
+            "min": 0
+        },
+        "iteration_duration": {
+            "p(90)": 1295.12841,
+            "p(95)": 1313.2051900000001,
+            "avg": 1276.1804746666674,
+            "min": 1240.4632,
+            "med": 1271.91195,
+            "max": 1437.4639
+        },
+        "Final_Submission_error": {
+            "rate": 0,
+            "count": 0
+        },
+        "ID_Card_Image_Storage": {
+            "avg": 70.07133800000004,
+            "min": 53.7109,
+            "med": 66.67155,
+            "max": 92.1486,
+            "p(90)": 81.99431999999999,
+            "p(95)": 86.363945
+        },
+        "SSO_Login_error": {
+            "count": 0,
+            "rate": 0
+        },
+        "Selfie_Image_Storage": {
+            "p(90)": 83.04157000000001,
+            "p(95)": 88.35836499999996,
+            "avg": 70.7649366666667,
+            "min": 60.8231,
+            "med": 65.72014999999999,
+            "max": 208.3323
+        },
+        "http_req_sending": {
+            "p(90)": 0,
+            "p(95)": 0.04397999999999993,
+            "avg": 0.026831999999999998,
+            "min": 0,
+            "med": 0,
+            "max": 1.0341
+        },
+        "checks": {
+            "passes": 1200,
+            "fails": 14400,
+            "value": 0.07692307692307693
+        },
+        "http_req_failed": {
+            "passes": 150,
+            "fails": 1050,
+            "value": 0.125
+        },
+        "Final_Submission": {
+            "avg": 50.18050066666669,
+            "min": 32.2078,
+            "med": 47.8387,
+            "max": 130.1985,
+            "p(90)": 59.171459999999996,
+            "p(95)": 76.59352499999984
+        },
+        "Selfie_Image_Storage_error": {
+            "count": 0,
+            "rate": 0
+        },
+        "Pre_check_error": {
+            "count": 0,
+            "rate": 0
+        },
+        "ID_Card_Duplicate_error": {
+            "count": 0,
+            "rate": 0
+        },
+        "data_sent": {
+            "count": 1819712,
+            "rate": 29896.269304199126
+        },
+        "http_req_blocked": {
+            "avg": 1.4431283333333322,
+            "min": 0,
+            "med": 0,
+            "max": 13.8,
+            "p(90)": 11.04388,
+            "p(95)": 11.505754999999999
+        },
+        "http_req_duration": {
+            "med": 17.600900000000003,
+            "max": 208.3323,
+            "p(90)": 68.60394000000005,
+            "p(95)": 78.24345999999998,
+            "avg": 32.783858250000016,
+            "min": 0.5188
+        },
+        "http_req_duration{expected_response:true}": {
+            "p(95)": 79.94761,
+            "avg": 35.034635619047634,
+            "min": 0.5188,
+            "med": 18.2228,
+            "max": 208.3323,
+            "p(90)": 69.73794
+        },
+        "vus_max": {
+            "value": 150,
+            "min": 150,
+            "max": 150
+        },
+        "http_reqs": {
+            "count": 1200,
+            "rate": 19.714945642518682
+        },
+        "http_req_connecting": {
+            "med": 0,
+            "max": 5.0491,
+            "p(90)": 3.665,
+            "p(95)": 3.858555,
+            "avg": 0.47825549999999983,
+            "min": 0
+        },
+        "http_req_receiving": {
+            "avg": 1.492054333333331,
+            "min": 0,
+            "med": 0.3719,
+            "max": 15.6953,
+            "p(90)": 3.575950000000002,
+            "p(95)": 9.515255
+        },
+        "ID_Card_OCR_error": {
+            "count": 0,
+            "rate": 0
+        },
+        "SSO_Login": {
+            "min": 8.1705,
+            "med": 9.56965,
+            "max": 12.1953,
+            "p(90)": 11.136389999999999,
+            "p(95)": 11.502699999999999,
+            "avg": 9.762454666666667
+        },
+        "ID_Card_Duplicate": {
+            "p(90)": 12.233500000000001,
+            "p(95)": 12.410594999999999,
+            "avg": 10.600308666666667,
+            "min": 0.5188,
+            "med": 10.72145,
+            "max": 13.3538
+        },
+        "data_received": {
+            "count": 5629067,
+            "rate": 92480.62493591309
+        },
+        "Citizen_eKYC_Registration_error": {
+            "count": 0,
+            "rate": 0
+        },
+        "vus": {
+            "max": 4,
+            "value": 3,
+            "min": 3
+        },
+        "Face_Detection": {
+            "avg": 17.028416666666676,
+            "min": 10.7331,
+            "med": 16.5509,
+            "max": 29.6536,
+            "p(90)": 19.92749,
+            "p(95)": 21.296149999999994
+        },
+        "ID_Card_Image_Storage_error": {
+            "count": 0,
+            "rate": 0
+        },
+        "Pre_check": {
+            "p(90)": 20.112109999999998,
+            "p(95)": 20.573014999999998,
+            "avg": 18.205590666666662,
+            "min": 15.5939,
+            "med": 18.049750000000003,
+            "max": 24.6614
+        },
+        "iterations": {
+            "count": 150,
+            "rate": 2.4643682053148352
+        }
+    }
+}
